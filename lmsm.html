@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LMSM Emulator</title>
+  <link rel="stylesheet" href="https://the.missing.style/v1.0.8/missing.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/theme/eclipse.min.css" integrity="sha512-Gv0sGKOVrQcQjUHL+xd9Bpq5AvLKbcQMb8s4J1//caCLxqvj00CLJMzJlqnTHTCQbKFRpPHqzXteq6dSMs7PEw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    .markCode {
+      background-color: lightgrey;
+    }
+  </style>
+  <script src="//unpkg.com/alpinejs" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/codemirror.min.js" integrity="sha512-rdFIN28+neM8H8zNsjRClhJb1fIYby2YCNmoqwnqBDEvZgpcp7MJiX8Wd+Oi6KcJOMOuvGztjrsI59rly9BsVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/addon/mode/simple.min.js" integrity="sha512-CGM6DWPHs250F/m90YZ9NEiEUhd9a4+u8wAzeKC6uHzZbYyt9/e2dLC5BGGB6Y0HtEdZQdSDYjDsoTyNGdMrMA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="lmsm.js"></script>
+</head>
+
+<body class="padding crowded" x-init="
+    new AssemblyMode();
+    editor = new CodeMirror($refs.codeEditor, {
+      lineNumbers: true,
+      tabSize: 2,
+      mode: 'lmsm-assembly'
+    });
+    editor.setSize('100%', 500);" x-data="{
+  compiler: new FirthCompiler(),
+  asm: new LMSMAssembler(),
+  lmsm: new LMSM(),
+  editor: undefined,
+  currentLineNumber: 0,
+  open() {
+  },
+  save() {
+  },
+  load() {
+    this.lmsm.reset();
+    if(this.currentLineNumber !== -1) {
+      this.editor.getDoc().removeLineClass(this.currentLineNumber, 'background', 'markCode');
+    }
+    this.currentLineNumber = -1;
+    this.lmsm.load(this.asm.assemble(this.editor.getValue()));
+  },
+  run() {
+    this.lmsm.run();
+  },
+  loadAndRun() {
+    this.lmsm = new LMSM();
+    this.lmsm.load(this.asm.assemble(this.editor.getValue()));
+    this.lmsm.run();
+  },
+  step() {
+    if(this.lmsm.halt === true) return;
+    if(this.currentLineNumber !== -1) {
+      this.editor.getDoc().removeLineClass(this.currentLineNumber, 'background', 'markCode');
+      this.lmsm.step();
+    }
+    this.currentLineNumber++;
+    this.editor.getDoc().addLineClass(this.currentLineNumber, 'background', 'markCode');
+  }
+}">
+  <div class="box center">
+    <h1 class="allcaps">Little Man Stack Machine Emulator</h1>
+  </div>
+  <div class="grid">
+    <div id="codeEditorBox" class="box" data-cols="1 2" data-rows="1 5">
+      <strong class="allcaps block titlebar">IDE</strong>
+      <form @submit.prevent>
+        <p>
+        <section class="tool-bar">
+          <input type="button" @click=" load()" value="Load" />
+          <input type="button" :disabled="lmsm.halt === true" @click="run()" value="Run" />
+          <input type="button" @click="loadAndRun()" value="Load & Run" />
+          <input type="button" :disabled="lmsm.halt === true" @click="step()" value="Step" />
+        </section>
+        <hr />
+        </p>
+        <p>
+        <div id="codeEditor" x-ref="codeEditor"></div>
+        </p>
+      </form>
+    </div>
+    <div id="registerFileBox" class="box" data-cols="3 6" data-rows="1">
+      <strong class="allcaps block titlebar">Register File</strong>
+      <div class="margin grid">
+        <div class="box bad" data-cols="1">
+          <span class="bold">PC:</span>&nbsp;<span x-text="lmsm.program_counter"></span>
+        </div>
+        <div class="box info" data-cols="2">
+          <span class="bold">ACC:</span>&nbsp;<span x-text="lmsm.accumulator"></span>
+        </div>
+        <div class="box info" data-cols="3">
+          <span class="bold">CI:</span>&nbsp;<span x-text="lmsm.current_instruction"></span>
+        </div>
+        <div class="box ok" data-cols="4">
+          <span class="bold">SP:</span>&nbsp;<span x-text="lmsm.stack_pointer"></span>
+        </div>
+        <div class="box warn" data-cols="5">
+          <span class="bold">RAP:</span>&nbsp;<span x-text="lmsm.return_address_pointer"></span>
+        </div>
+      </div>
+    </div>
+    <div id="memoryBox" class="box" data-cols="3 6" data-rows="2 5">
+      <strong class="allcaps block titlebar">Memory Layout</strong>
+      <div class="center">
+        <table class="width:75%">
+          <caption></caption>
+          <thead>
+            <th></th>
+            <template x-for="i in (lmsm.memory.length / 20)">
+              <th x-text="i - 1"></th>
+            </template>
+          </thead>
+          <tbody>
+            <template x-for="i in (lmsm.memory.length / 10)">
+              <tr>
+                <td x-text="(i - 1) * 10" class="bold"></td>
+                <template x-for="j in (lmsm.memory.length / 20)">
+                  <td :class="cellClass()" x-data="{
+                    mempos: ((i-1) * 10) + j - 1, 
+                    cellClass() {
+                      if(this.lmsm.program_counter === this.mempos)
+                       return 'bad color bg border'
+                      else if (this.lmsm.stack_pointer === this.mempos)
+                        return 'ok color bg border'
+                      else if(this.lmsm.return_address_pointer === this.mempos)
+                        return 'warn color bg border'
+                      else return '';
+                    }
+                }" x-text="lmsm.memory[mempos]"></td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="outputBox" class="box" data-cols="7 8" data-rows="1 5">
+      <strong class="allcaps block titlebar">Output</strong>
+      <p>
+        <input type="button" @click="lmsm.clearOutput()" value="Clear" />
+      <div class="box" style="min-height: 90%; max-height:90%;" class="overflow:auto">
+        <template x-for="line in lmsm.output">
+          <div x-text="line"></div>
+        </template>
+      </div>
+      </p>
+    </div>
+  </div>
+</body>
+
+</html>
