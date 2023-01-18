@@ -13,6 +13,36 @@
     .markCode {
       background-color: lightgrey;
     }
+
+    .riobeach {
+      --density: 0.125;
+    }
+
+    input.memory_slot {
+      font-size: small;
+      line-height: 0px;
+    }
+
+    input.register {
+      font-size: medium;
+      line-height: 0px;
+    }
+
+    input.program_counter {
+      background-color: var(--bad-bg);
+    }
+
+    input.stack_pointer {
+      background-color: var(--ok-bg);
+    }
+
+    input.return_address_pointer {
+      background-color: var(--warn-bg);
+    }
+
+    .box {
+      font-size: small;
+    }
   </style>
   <script src="//unpkg.com/alpinejs" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/codemirror.min.js" integrity="sha512-rdFIN28+neM8H8zNsjRClhJb1fIYby2YCNmoqwnqBDEvZgpcp7MJiX8Wd+Oi6KcJOMOuvGztjrsI59rly9BsVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -20,7 +50,7 @@
   <script src="lmsm.js"></script>
 </head>
 
-<body class="padding crowded" x-init="
+<body class="padding riobeach" x-init="
     new AssemblyMode();
     editor = new CodeMirror($refs.codeEditor, {
       lineNumbers: true,
@@ -67,7 +97,7 @@
     <h1 class="allcaps">Little Man Stack Machine Emulator</h1>
   </div>
   <div class="grid">
-    <div id="codeEditorBox" class="box" data-cols="1 2" data-rows="1 5">
+    <div id="codeEditorBox" class="box" data-cols="1" data-rows="1 2">
       <strong class="allcaps block titlebar">IDE</strong>
       <form @submit.prevent>
         <p>
@@ -77,37 +107,46 @@
           <input type="button" @click="loadAndRun()" value="Load & Run" />
           <input type="button" :disabled="lmsm.halt === true" @click="step()" value="Step" />
         </section>
-        <hr />
         </p>
         <p>
         <div id="codeEditor" x-ref="codeEditor"></div>
         </p>
       </form>
     </div>
-    <div id="registerFileBox" class="box" data-cols="3 6" data-rows="1">
+    <div id="registerFileBox" class="box" data-cols="2" data-rows="1">
       <strong class="allcaps block titlebar">Register File</strong>
       <div class="margin grid">
         <div class="box bad" data-cols="1">
-          <span class="bold">PC:</span>&nbsp;<span x-text="lmsm.program_counter"></span>
+          <label class="bold">PC:
+            <input class="register" type="text" size="3" x-model="lmsm.program_counter" />
+          </label>
         </div>
         <div class="box info" data-cols="2">
-          <span class="bold">ACC:</span>&nbsp;<span x-text="lmsm.accumulator"></span>
+          <label class="bold">ACC:
+            <input class="register" size="3" type="text" x-model="lmsm.accumulator" />
+          </label>
         </div>
         <div class="box info" data-cols="3">
-          <span class="bold">CI:</span>&nbsp;<span x-text="lmsm.current_instruction"></span>
+          <label class="bold">CI:
+            <input class="register" size="3" type="text" x-model="lmsm.current_instruction" />
+          </label>
         </div>
         <div class="box ok" data-cols="4">
-          <span class="bold">SP:</span>&nbsp;<span x-text="lmsm.stack_pointer"></span>
+          <label class="bold">SP:
+            <input class="register" size="3" type="text" x-model="lmsm.stack_pointer" />
+          </label>
         </div>
         <div class="box warn" data-cols="5">
-          <span class="bold">RAP:</span>&nbsp;<span x-text="lmsm.return_address_pointer"></span>
+          <label class="bold">RAP:
+            <input class="register" size="3" type="text" x-model="lmsm.return_address_pointer" />
+          </label>
         </div>
       </div>
     </div>
-    <div id="memoryBox" class="box" data-cols="3 6" data-rows="2 5">
+    <div id="memoryBox" class="box" data-cols="2" data-rows="2">
       <strong class="allcaps block titlebar">Memory Layout</strong>
       <div class="center">
-        <table class="width:75%">
+        <table class="width:75% packed" style="border-spacing: 0px; margin: 0px; padding-inline-end: 0px;">
           <caption></caption>
           <thead>
             <th></th>
@@ -118,20 +157,22 @@
           <tbody>
             <template x-for="i in (lmsm.memory.length / 10)">
               <tr>
-                <td x-text="(i - 1) * 10" class="bold"></td>
+                <td style="border-spacing: 0px; margin: 0px; padding-inline-end: 0px;" x-text="(i - 1) * 10" class="bold"></td>
                 <template x-for="j in (lmsm.memory.length / 20)">
-                  <td :class="cellClass()" x-data="{
+                  <td style="border-spacing: 0px; margin: 0px; padding-inline-end: 0px;">
+                    <input size="3" type="text" :class="cellClass()" x-model="lmsm.memory[mempos]" x-data="{
                     mempos: ((i-1) * 10) + j - 1, 
                     cellClass() {
                       if(this.lmsm.program_counter === this.mempos)
-                       return 'bad color bg border'
+                       return 'memory_slot program_counter'
                       else if (this.lmsm.stack_pointer === this.mempos)
-                        return 'ok color bg border'
+                        return 'memory_slot stack_pointer'
                       else if(this.lmsm.return_address_pointer === this.mempos)
-                        return 'warn color bg border'
-                      else return '';
+                        return 'memory_slot return_address_pointer'
+                      else return 'memory_slot';
                     }
-                }" x-text="lmsm.memory[mempos]"></td>
+                }" />
+                  </td>
                 </template>
               </tr>
             </template>
@@ -139,11 +180,11 @@
         </table>
       </div>
     </div>
-    <div id="outputBox" class="box" data-cols="7 8" data-rows="1 5">
+    <div id="outputBox" class="box" data-cols="3" data-rows="1 2">
       <strong class="allcaps block titlebar">Output</strong>
       <p>
         <input type="button" @click="lmsm.clearOutput()" value="Clear" />
-      <div class="box" style="min-height: 90%; max-height:90%;" class="overflow:auto">
+      <div class="box" style="height: 600px; overflow-y: scroll;">
         <template x-for="line in lmsm.output">
           <div x-text="line"></div>
         </template>
