@@ -223,7 +223,7 @@ class LMSMAssembler {
     [/SMIN/, () => 935],
     [/JAL/, () => 910],
     [/RET/, () => 911],
-    [/HLT/, () => 0],
+    [/HLT/, () => "000"],
     [/DAT/, () => LMSMAssembler.pseudoInstruction],
   ];
 
