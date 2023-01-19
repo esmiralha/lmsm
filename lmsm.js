@@ -168,7 +168,7 @@ class LMSM {
     if (!program || program === "") return;
     const opcodes = program.split("\n");
     this.program_counter = 0;
-    this.memory.fill(0);
+    this.memory.fill("000");
     opcodes.filter((opcode) => opcode && opcode.trim() !== "").forEach((opcode, i) => {
       this.memory[i] = opcode;
     });
