@@ -9,57 +9,7 @@
   <link rel="stylesheet" href="https://the.missing.style/v1.0.8/missing.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/theme/eclipse.min.css" integrity="sha512-Gv0sGKOVrQcQjUHL+xd9Bpq5AvLKbcQMb8s4J1//caCLxqvj00CLJMzJlqnTHTCQbKFRpPHqzXteq6dSMs7PEw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <style>
-    td.memorySlot {
-      border-spacing: 0em;
-      margin: 0em;
-      padding-inline-end: 0em;
-    }
-
-    #outputPane {
-      height: 52em;
-      overflow-y: scroll;
-    }
-
-    .pane {
-      background-color: white;
-    }
-
-    .markCode {
-      background-color: lightgrey;
-    }
-
-    .riobeachonsummer {
-      --density: 0.125;
-    }
-
-    input.memory_slot {
-      font-size: small;
-      line-height: 0em;
-      background-color: white;
-    }
-
-    input.register {
-      font-size: medium;
-      line-height: 0em;
-    }
-
-    input.program_counter {
-      background-color: var(--bad-bg);
-    }
-
-    input.stack_pointer {
-      background-color: var(--ok-bg);
-    }
-
-    input.return_address_pointer {
-      background-color: var(--warn-bg);
-    }
-
-    .box {
-      font-size: small;
-    }
-  </style>
+  <link rel="stylesheet" href="lmsm.css" />
   <script src="//unpkg.com/alpinejs" defer></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.7"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/codemirror.min.js" integrity="sha512-rdFIN28+neM8H8zNsjRClhJb1fIYby2YCNmoqwnqBDEvZgpcp7MJiX8Wd+Oi6KcJOMOuvGztjrsI59rly9BsVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
