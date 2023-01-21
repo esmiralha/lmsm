@@ -202,6 +202,30 @@
       </div>
     </div>
   </div>
+  <script>
+    function keepItScrolledToBottom(scrollingElement) {
+      const config = {
+        childList: true
+      };
+
+      const callback = function(mutationsList, observer) {
+        for (let mutation of mutationsList) {
+          if (mutation.type === "childList") {
+            mutation.target.scroll({
+              top: mutation.target.scrollHeight,
+              left: 0,
+              behavior: 'smooth'
+            });
+          }
+        }
+      };
+
+      const observer = new MutationObserver(callback);
+      observer.observe(scrollingElement, config);
+    }
+
+    keepItScrolledToBottom(document.querySelector("#outputPane"));
+  </script>
 </body>
 
 </html>
