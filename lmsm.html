@@ -61,6 +61,7 @@
     }
   </style>
   <script src="//unpkg.com/alpinejs" defer></script>
+  <script src="https://unpkg.com/hyperscript.org@0.9.7"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/codemirror.min.js" integrity="sha512-rdFIN28+neM8H8zNsjRClhJb1fIYby2YCNmoqwnqBDEvZgpcp7MJiX8Wd+Oi6KcJOMOuvGztjrsI59rly9BsVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/addon/mode/simple.min.js" integrity="sha512-CGM6DWPHs250F/m90YZ9NEiEUhd9a4+u8wAzeKC6uHzZbYyt9/e2dLC5BGGB6Y0HtEdZQdSDYjDsoTyNGdMrMA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="lmsm.js"></script>
@@ -195,37 +196,13 @@
     <div id="outputBox" class="box" data-cols="3" data-rows="2 3">
       <strong class="allcaps block titlebar">Output</strong>
       <input type="button" @click="lmsm.clearOutput()" value="Clear" />
-      <div id="outputPane" class="box pane">
+      <div id="outputPane" class="box pane" _="on mutation of childList set target to me js(target) target.scroll({top: target.scrollHeight, left: 0, behavior: 'smooth'})">
         <template x-for="line in lmsm.output">
           <div x-text="line"></div>
         </template>
       </div>
     </div>
   </div>
-  <script>
-    function keepItScrolledToBottom(scrollingElement) {
-      const config = {
-        childList: true
-      };
-
-      const callback = function(mutationsList, observer) {
-        for (let mutation of mutationsList) {
-          if (mutation.type === "childList") {
-            mutation.target.scroll({
-              top: mutation.target.scrollHeight,
-              left: 0,
-              behavior: 'smooth'
-            });
-          }
-        }
-      };
-
-      const observer = new MutationObserver(callback);
-      observer.observe(scrollingElement, config);
-    }
-
-    keepItScrolledToBottom(document.querySelector("#outputPane"));
-  </script>
 </body>
 
 </html>
